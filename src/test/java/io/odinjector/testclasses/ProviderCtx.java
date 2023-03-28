@@ -1,11 +1,11 @@
 package io.odinjector.testclasses;
 
 import io.odinjector.Binder;
-import io.odinjector.Context;
+import io.odinjector.BindingContext;
 
 import javax.inject.Provider;
 
-public class ProviderCtx extends Context {
+public class ProviderCtx extends BindingContext {
 
 	@Override
 	public void configure(Binder binder) {

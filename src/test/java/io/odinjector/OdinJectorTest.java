@@ -1,14 +1,15 @@
 package io.odinjector;
 
 import io.odinjector.testclasses.*;
+import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mockito;
 
-import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.function.BiConsumer;
 
 import static org.junit.Assert.*;
 import static org.mockito.Mockito.*;
@@ -99,8 +100,8 @@ public class OdinJectorTest {
 
 	@Test
 	public void getNotSingleton() {
-		TestImpl1 actual1 = odinJector.getInstance(TestImpl1.class);
-		TestImpl2 actual2 = odinJector.getInstance(TestImpl2.class);
+		TestInterface1 actual1 = odinJector.getInstance(TestImpl1.class);
+		TestInterface1 actual2 = odinJector.getInstance(TestImpl2.class);
 
 		assertNotSame(actual1, actual2);
 	}
@@ -244,9 +245,7 @@ public class OdinJectorTest {
 
 	@Test
 	public void customAnnotation() {
-		odinJector.addAnnotation(CustomAnnotation.class, (ca, conf) -> {
-			conf.addContext(MyAltCtx.class);
-		});
+		odinJector.addAnnotation(CustomAnnotation.class, (ca, conf) -> conf.addContext(MyAltCtx.class));
 
 		ClassWithCustomAnntation actaul = odinJector.getInstance(ClassWithCustomAnntation.class);
 
@@ -255,9 +254,7 @@ public class OdinJectorTest {
 
 	@Test
 	public void customAnnotation_onParentClass() {
-		odinJector.addAnnotation(CustomAnnotation.class, (ca, conf) -> {
-			conf.addContext(MyAltCtx.class);
-		});
+		odinJector.addAnnotation(CustomAnnotation.class, (ca, conf) -> conf.addContext(MyAltCtx.class));
 
 		ExtendingClassWithCustomAnnotation actaul = odinJector.getInstance(ExtendingClassWithCustomAnnotation.class);
 
@@ -288,14 +285,11 @@ public class OdinJectorTest {
 	@Test
 	public void wrapObjectUsingListener() {
 		odinJector = OdinJector.create();
-		TestInterface1 mock = Mockito.mock(TestInterface1.class);
-		odinJector.addContext(new Context() {
+		odinJector.addContext(new BindingContext() {
 			@Override
 			public void configure(Binder binder) {
 				binder.bindPackageToContext(TestImpl1.class.getPackage());
-				binder.injectionListener((injectionContext) -> {
-					injectionContext.wrap((obj) -> Mockito.spy(obj));
-				});
+				binder.injectionListener((injectionContext) -> injectionContext.wrap(Mockito::spy));
 			}
 		});
 		TestImpl1 actual = odinJector.getInstance(TestImpl1.class);
@@ -308,13 +302,13 @@ public class OdinJectorTest {
 	public void wrapObjectUsingListener_forCertainObjects() {
 		odinJector = OdinJector.create();
 		TestInterface1 mock = Mockito.mock(TestInterface1.class);
-		odinJector.addContext(new Context() {
+		odinJector.addContext(new BindingContext() {
 			@Override
 			public void configure(Binder binder) {
 				binder.bindPackageToContext(TestImpl1.class.getPackage());
 				binder.bind(TestInterface1.class).to(TestImpl1.class);
 				binder.injectionListener((injectionContext) -> {
-					if(injectionContext.getTarget().hasAnnotation(Wrapped.class) && injectionContext.getBindingKey().getBoundClass() == TestInterface1.class) {
+					if(injectionContext.getTarget().hasAnnotation(Wrapped.class) && injectionContext.getBindingKey().getBoundClass().equals(TestInterface1.class)) {
 						injectionContext.wrap((o) -> mock);
 					}
 				});
@@ -331,7 +325,7 @@ public class OdinJectorTest {
 	public void wrapObjectUsingBindingResultListener_failOnMockInjected() {
 		odinJector = OdinJector.create();
 		TestInterface1 mock = Mockito.mock(TestInterface1.class);
-		odinJector.addContext(new Context() {
+		odinJector.addContext(new BindingContext() {
 			@Override
 			public void configure(Binder binder) {
 				binder.bindPackageToContext(TestImpl1.class.getPackage());
@@ -350,7 +344,7 @@ public class OdinJectorTest {
 	public void dependsOnGeneric() {
 		odinJector = OdinJector.create();
 		TestImpl1 mock = Mockito.mock(TestImpl1.class);
-		odinJector.addContext(new Context() {
+		odinJector.addContext(new BindingContext() {
 			@Override
 			public void configure(Binder binder) {
 				binder.bind(TestImpl1.class).to(() -> mock);
@@ -369,7 +363,7 @@ public class OdinJectorTest {
 		odinJector = OdinJector.create();
 		TestImpl1 mock = Mockito.mock(TestImpl1.class);
 		TestImpl2 mock2 = Mockito.mock(TestImpl2.class);
-		odinJector.addContext(new Context() {
+		odinJector.addContext(new BindingContext() {
 			@Override
 			public void configure(Binder binder) {
 				binder.bind(TestImpl1.class).to(() -> mock);
@@ -391,7 +385,7 @@ public class OdinJectorTest {
 		TestImpl1 mock = Mockito.mock(TestImpl1.class);
 		TestImpl2 mock2 = Mockito.mock(TestImpl2.class);
 		TestImpl3 mock3 = Mockito.mock(TestImpl3.class);
-		odinJector.addContext(new Context() {
+		odinJector.addContext(new BindingContext() {
 			@Override
 			public void configure(Binder binder) {
 			binder.bind(TestImpl1.class).to(() -> mock);
@@ -450,9 +444,9 @@ public class OdinJectorTest {
 
 	@Test
 	public void differentSingletonsInDifferentContexts() {
-		odinJector = OdinJector.create().addContext(new SingletonCtx()).addDynamicContext(new ASingletonContext());
+		odinJector = OdinJector.create().addContext(new SingletonCtx()).addDynamicContext(new ASingletonBindingContext());
 
-		TestInterface1 withASingletonScopedContext = odinJector.getInstance(ASingletonContext.class, TestInterface1.class);
+		TestInterface1 withASingletonScopedContext = odinJector.getInstance(ASingletonBindingContext.class, TestInterface1.class);
 		TestInterface1 withoutAnyContext = odinJector.getInstance(TestInterface1.class);
 
 		assertNotSame(withASingletonScopedContext, withoutAnyContext);
@@ -468,29 +462,41 @@ public class OdinJectorTest {
 		assertSame(withASingletonScopedContext, withoutAnyContext);
 	}
 
-		//@Test
-	public void runAll() throws Throwable {
+	@Test
+	public void singletonWithinSingleton() {
 		odinJector = OdinJector.create().addContext(new SingletonCtx());
-		List<Method> methods = new ArrayList<>();
-		for (Method m : OdinJectorTest.class.getMethods()) {
-			if (m.getAnnotation(Test.class) != null && !m.getName().equals("runAll")) {
-				methods.add(m);
-			}
-		}
+
+		OtherSingleton otherSingleton = odinJector.getInstance(OtherSingleton.class);
+		OtherSingleton otherSingleton2 = odinJector.getInstance(OtherSingleton.class);
+
+		assertSame(otherSingleton, otherSingleton2);
+		assertSame(otherSingleton.inner(), otherSingleton2.inner());
+	}
+
+	@Test
+	public void perfTestBasic() throws Throwable {
+		perfTestBase(Assert::assertNotSame);
+	}
+
+	@Test
+	public void perfTestSingleton() throws Throwable {
+		odinJector = OdinJector.create().addContext(new SingletonCtx());
+		perfTestBase(Assert::assertSame);
+	}
+
+	private void perfTestBase(BiConsumer<TestInterface1, TestInterface1> assertDelegate) {
 		long s = System.currentTimeMillis();
-		int success = 0;
-		int fail = 0;
 
 		List<Thread> threads = new ArrayList<>();
 		for(int i=0;i<10;i++) {
 			Thread t = new Thread(() -> {
-				Object previous = null;
+				TestInterface1 previous = null;
 				for(int x =0;x<100_000;x++) {
 					TestInterface1 actual1 = odinJector.getInstance(TestInterface1.class);
 					if (previous == null) {
 						previous = actual1;
 					} else {
-						assertSame(previous, actual1);
+						assertDelegate.accept(previous, actual1);
 					}
 				}
 			});
@@ -504,7 +510,6 @@ public class OdinJectorTest {
 				throw new RuntimeException(e);
 			}
 		});
-		System.out.println(System.currentTimeMillis()-s);
-		System.out.println(success+" vs "+fail);
+		assertTrue(3000 > System.currentTimeMillis()-s);
 	}
 }

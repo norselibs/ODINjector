@@ -1,9 +1,9 @@
 package io.odinjector.testclasses;
 
 import io.odinjector.Binder;
-import io.odinjector.Context;
+import io.odinjector.BindingContext;
 
-public class MyAltCtxWithMarker extends Context {
+public class MyAltCtxWithMarker extends BindingContext {
 	@Override
 	public void configure(Binder binder) {
 		binder.bind(Hierarchy.class).to(AltHierarchyImpl.class);

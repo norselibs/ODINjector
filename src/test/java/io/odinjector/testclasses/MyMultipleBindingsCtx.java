@@ -1,9 +1,9 @@
 package io.odinjector.testclasses;
 
 import io.odinjector.Binder;
-import io.odinjector.Context;
+import io.odinjector.BindingContext;
 
-public class MyMultipleBindingsCtx extends Context {
+public class MyMultipleBindingsCtx extends BindingContext {
 	@Override
 	public void configure(Binder binder) {
 		binder.bind(TestInterface1.class).add(TestImpl1.class);

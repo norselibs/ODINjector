@@ -27,7 +27,7 @@ public class ClassBinding<T> implements Binding<T> {
 		return new ClassBinding<>(toClass, setAsSingleton);
 	}
 
-	public Provider<T> getProvider(Context context, InjectionContext<T> thisInjectionContext, OdinJector injector) {
+	public Provider<T> getProvider(BindingContext context, InjectionContext<T> thisInjectionContext, OdinJector injector) {
 		Constructor<?> constructor = Arrays.stream(toClass.getBoundClass().getConstructors()).filter(const1 -> const1.isAnnotationPresent(Inject.class)).findFirst()
 				.orElseGet(() -> Arrays.stream(toClass.getBoundClass().getConstructors()).filter(c2 -> c2.getParameterTypes().length == 0).findFirst()
 						.orElseThrow(() -> new InjectionException("Unable to find constructor which has the @Inject annotation or is parameterless on: "+toClass.getName())));

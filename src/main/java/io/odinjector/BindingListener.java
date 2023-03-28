@@ -1,5 +1,5 @@
 package io.odinjector;
 
-public interface BindingListener {
-    void listen(InjectionModifier injectionModifier);
+public interface BindingListener<T> {
+    void listen(InjectionModifier<T> injectionModifier);
 }

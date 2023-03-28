@@ -10,17 +10,17 @@ import java.util.Map;
 import java.util.function.BiConsumer;
 import java.util.stream.Collectors;
 
-class Yggdrasill extends SingletonContext {
-	final Map<Class<?>, Context> contexts = Collections.synchronizedMap(new LinkedHashMap<>());
-	private final Map<Class<?>, Context> dynamicContexts = Collections.synchronizedMap(new LinkedHashMap<>());
+class Yggdrasill extends SingletonBindingContext {
+	final Map<Class<?>, BindingContext> contexts = Collections.synchronizedMap(new LinkedHashMap<>());
+	private final Map<Class<?>, BindingContext> dynamicContexts = Collections.synchronizedMap(new LinkedHashMap<>());
 	private Map<Class<? extends Annotation>,BiConsumer<Object, ContextConfiguration>> annotations = Collections.synchronizedMap(new LinkedHashMap<>());
 
-	public void addContext(Context context) {
+	public void addContext(BindingContext context) {
 		context.init();
 		contexts.put(context.getClass(), context);
 	}
 
-	public void addDynamicContext(Context context) {
+	public void addDynamicContext(BindingContext context) {
 		context.init();
 		dynamicContexts.put(context.getMarkedContext(), context);
 	}
@@ -32,18 +32,18 @@ class Yggdrasill extends SingletonContext {
 
 	<T> List<BindingResult<T>> getBindings(InjectionContext<T> injectionContext) {
 		if (injectionContext.getContext() != null) {
-			List<Context> list = new ArrayList<>(injectionContext.getContext());
+			List<BindingContext> list = new ArrayList<>(injectionContext.getContext());
 			Collections.reverse(list);
-			for (Context context : list) {
+			for (BindingContext context : list) {
 				List<BindingResult<T>> bindings = context.getBindings(injectionContext);
 				if (!bindings.isEmpty()) {
 					return bindings;
 				}
 			}
 		}
-		List<Context> list = new ArrayList<>(contexts.values());
+		List<BindingContext> list = new ArrayList<>(contexts.values());
 		Collections.reverse(list);
-		for(Context context : list) {
+		for(BindingContext context : list) {
 			List<BindingResult<T>> bindings = context.getBindings(injectionContext);
 			if (!bindings.isEmpty()) {
 				return bindings;
@@ -55,7 +55,7 @@ class Yggdrasill extends SingletonContext {
 		return Collections.singletonList(BindingResult.of(ClassBinding.of(injectionContext.getBindingKey()), this));
 	}
 
-	List<? extends Context> getDynamicContexts(List<Class<?>> annotationContexts) {
+	List<? extends BindingContext> getDynamicContexts(List<Class<?>> annotationContexts) {
 		return annotationContexts.stream().map(ac -> {
 			if (!dynamicContexts.containsKey(ac)) {
 				throw new InjectionException("Unable to find a registered dynamic context for: "+ac.getName());

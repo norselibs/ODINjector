@@ -6,16 +6,16 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 
 public class InjectionContextImpl<T> implements InjectionContext<T> {
-	List<Context> context;
-	Deque<List<Context>> nextContexts;
-	List<Context> recursiveContext = new ArrayList<>();
+	List<BindingContext> context;
+	Deque<List<BindingContext>> nextContexts;
+	List<BindingContext> recursiveContext = new ArrayList<>();
 	BindingKey<T> clazz;
 	InjectionOptions options = InjectionOptions.get();
 	BindingTarget target;
 	private List<Function<T, T>> wrappers = new ArrayList<>();
 	private Map<Class<?>, BindingResultListener> bindingResultListeners = new ConcurrentHashMap<>();
 
-	static <C> InjectionContext<C> get(List<Context> context, BindingKey<C> clazz, InjectionOptions options) {
+	static <C> InjectionContext<C> get(List<BindingContext> context, BindingKey<C> clazz, InjectionOptions options) {
 		InjectionContextImpl<C> ic = new InjectionContextImpl<>();
 		ic.context = context;
 		ic.nextContexts = new ArrayDeque<>();
@@ -25,7 +25,7 @@ public class InjectionContextImpl<T> implements InjectionContext<T> {
 		return ic;
 	}
 
-	static <C> InjectionContext<C> get(List<Context> context, BindingKey<C> clazz) {
+	static <C> InjectionContext<C> get(List<BindingContext> context, BindingKey<C> clazz) {
 		InjectionContextImpl<C> ic = new InjectionContextImpl<>();
 		ic.context = context;
 		ic.nextContexts = new ArrayDeque<>();
@@ -45,13 +45,13 @@ public class InjectionContextImpl<T> implements InjectionContext<T> {
 	}
 
 	@Override
-	public List<Context> getContext() {
+	public List<BindingContext> getContext() {
 		return context;
 	}
 
 	public <C> InjectionContextImpl<C> nextContextFor(Class<C> parameterType, BindingTarget target) {
-		ArrayDeque<List<Context>> nextContexts = new ArrayDeque<>(this.nextContexts);
-		List<Context> nextContext = nextContexts.poll();
+		ArrayDeque<List<BindingContext>> nextContexts = new ArrayDeque<>(this.nextContexts);
+		List<BindingContext> nextContext = nextContexts.poll();
 		if (nextContext == null) {
 			nextContext = new ArrayList<>();
 		}
@@ -92,8 +92,8 @@ public class InjectionContextImpl<T> implements InjectionContext<T> {
 		}
 	}
 
-	public void addNext(Collection<? extends Context> contexts, boolean recursive) {
-		List<Context> nextContext = new ArrayList<>(this.context);
+	public void addNext(Collection<? extends BindingContext> contexts, boolean recursive) {
+		List<BindingContext> nextContext = new ArrayList<>(this.context);
 		nextContext.addAll(contexts);
 		if (recursive) {
 			recursiveContext.addAll(nextContext);
@@ -102,7 +102,7 @@ public class InjectionContextImpl<T> implements InjectionContext<T> {
 		}
 	}
 
-	public void addToNext(Collection<? extends Context> contexts, boolean recursive) {
+	public void addToNext(Collection<? extends BindingContext> contexts, boolean recursive) {
 		if (recursive) {
 			recursiveContext.addAll(contexts);
 		} else {
@@ -144,11 +144,11 @@ public class InjectionContextImpl<T> implements InjectionContext<T> {
 	}
 
 	public static class CurrentContext<T> {
-		List<Context> context;
+		List<BindingContext> context;
 		BindingKey<T> bindingKey;
 		BindingTarget bindingTarget;
 
-		public CurrentContext(List<Context> context, BindingKey<T> bindingKey, BindingTarget bindingTarget) {
+		public CurrentContext(List<BindingContext> context, BindingKey<T> bindingKey, BindingTarget bindingTarget) {
 			this.context = context;
 			this.bindingKey = bindingKey;
 			this.bindingTarget = bindingTarget;

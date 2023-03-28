@@ -1,12 +1,8 @@
 package io.odinjector;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.function.Function;
-
 public class BindingResult<T> {
 	Binding<T> binding = null;
-	Context context = null;
+	BindingContext context = null;
 
 	private BindingResult() {
 
@@ -16,7 +12,7 @@ public class BindingResult<T> {
 		return binding == null;
 	}
 
-	public static <C> BindingResult<C> of(Binding<C> binding, Context context) {
+	public static <C> BindingResult<C> of(Binding<C> binding, BindingContext context) {
 		BindingResult result = new BindingResult();
 		result.binding = binding;
 		result.context = context;

@@ -20,7 +20,7 @@ public class OdinJector implements Injector {
 			config.recursive(ci.recursive()).addContext(ci.value());
 		});
 		Injector injector = this;
-		addContext(new Context() {
+		addContext(new BindingContext() {
 			@Override
 			public void configure(Binder binder) {
 				binder.bind(Injector.class).to(() -> injector);
@@ -32,12 +32,12 @@ public class OdinJector implements Injector {
 		return new OdinJector();
 	}
 
-	public OdinJector addContext(Context context) {
+	public OdinJector addContext(BindingContext context) {
 		yggdrasill.addContext(context);
 		return this;
 	}
 
-	public OdinJector addDynamicContext(Context context) {
+	public OdinJector addDynamicContext(BindingContext context) {
 		yggdrasill.addDynamicContext(context);
 		return this;
 	}

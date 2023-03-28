@@ -1,13 +1,12 @@
 package io.odinjector;
 
-import javax.inject.Provider;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
 
-public abstract class Context {
+public abstract class BindingContext {
 	Map<BindingKey<?>, List<Binding<?>>> contextBindings = new ConcurrentHashMap<>();
-	Map<BindingKey<?>, Provider<?>> providers = new ConcurrentHashMap<>();
+	@SuppressWarnings("rawtypes")
 	Map<Class<?>, BindingListener> bindingListeners = new ConcurrentHashMap<>();
 	Set<Package> packageBindings = Collections.synchronizedSet(new HashSet<>());
 	Map<Class<?>, BindingResultListener> bindingResultListeners = new ConcurrentHashMap<>();
@@ -18,18 +17,17 @@ public abstract class Context {
 		configure(new ContextBinder(this));
 	}
 
-	@SuppressWarnings("unchecked")
+	@SuppressWarnings({"unchecked","rawtypes"})
 	<T> List<BindingResult<T>> getBindings(InjectionContext<T> injectionContext) {
 		bindingListeners.values().forEach(bl -> bl.listen(injectionContext));
 		injectionContext.setResultListeners(bindingResultListeners);
 		if (!contextBindings.containsKey(injectionContext.getBindingKey()) && packageBindings.contains(injectionContext.getBindingKey().getBoundClass().getPackage())) {
 			contextBindings.put(injectionContext.getBindingKey(), Collections.singletonList(ClassBinding.of(injectionContext.getBindingKey(), false)));
 		}
-		List res = (List) (contextBindings.containsKey(injectionContext.getBindingKey())
-			? contextBindings.get(injectionContext.getBindingKey()).stream().map(b -> BindingResult.of(b, this)).collect(Collectors.toList())
+		return (contextBindings.containsKey(injectionContext.getBindingKey())
+			? (List)contextBindings.get(injectionContext.getBindingKey()).stream().map(b -> BindingResult.of(b, this)).collect(Collectors.toList())
 			: Collections.emptyList()
 		);
-		return res;
 	}
 
 	public <T> BindingResult<T> getBinding(InjectionContext<T> injectionContext) {
@@ -57,10 +55,12 @@ public abstract class Context {
 		return getClass().hashCode();
 	}
 
+	@SuppressWarnings("rawtypes")
 	public void addListener(BindingListener listener) {
 		bindingListeners.put(listener.getClass(), listener);
 	}
 
+	@SuppressWarnings("rawtypes")
 	public Map<Class<?>, BindingListener> getBindingListeners() {
 		return bindingListeners;
 	}

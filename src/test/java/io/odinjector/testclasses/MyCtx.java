@@ -1,9 +1,9 @@
 package io.odinjector.testclasses;
 
 import io.odinjector.Binder;
-import io.odinjector.Context;
+import io.odinjector.BindingContext;
 
-public class MyCtx extends Context {
+public class MyCtx extends BindingContext {
 	@Override
 	public void configure(Binder binder) {
 		binder.bind(InterfaceForClassWithNonRecursiveHierarchialContext.class).to(ClassWithNonRecursiveHierarchialContext.class);

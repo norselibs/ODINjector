@@ -3,15 +3,12 @@ package io.odinjector;
 import javax.inject.Provider;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.function.BiConsumer;
-import java.util.function.BiFunction;
-import java.util.function.Consumer;
-import java.util.function.Function;
+import java.util.List;
 
 public class ContextBinder implements Binder {
-	private Context context;
+	private final BindingContext context;
 
-	public ContextBinder(Context context) {
+	public ContextBinder(BindingContext context) {
 		this.context = context;
 	}
 
@@ -20,6 +17,7 @@ public class ContextBinder implements Binder {
 		return new BindingToImpl<T>(context, BindingKey.get(fromClass));
 	}
 
+	@SuppressWarnings("rawtypes")
 	@Override
 	public void injectionListener(BindingListener listener) {
 		context.addListener(listener);
@@ -41,10 +39,10 @@ public class ContextBinder implements Binder {
 	}
 
 	private static class BindingToImpl<T> implements BindingTo<T> {
-		private final Context context;
+		private final BindingContext context;
 		private boolean setAsSingleton = false;
-		private BindingKey<T> fromClass;
-		public BindingToImpl(Context context, BindingKey<T> fromClass) {
+		private final BindingKey<T> fromClass;
+		public BindingToImpl(BindingContext context, BindingKey<T> fromClass) {
 			this.context = context;
 			this.fromClass = fromClass;
 		}
@@ -54,6 +52,7 @@ public class ContextBinder implements Binder {
 			context.contextBindings.put(fromClass, Collections.singletonList(ClassBinding.of(BindingKey.get(toClass), setAsSingleton)));
 		}
 
+		@SuppressWarnings({"rawtypes", "unchecked"})
 		@Override
 		public void to(Provider<? extends T> provider) {
 			context.contextBindings.put(fromClass, Collections.singletonList(ProviderBinding.of((Provider)provider, fromClass, setAsSingleton)));

@@ -3,7 +3,6 @@ package io.odinjector;
 import javax.inject.Provider;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -51,8 +50,8 @@ class Providers {
 		return (Provider<T>) providerToReturn.get();
 	}
 
-	private SingletonContext getSingletonContext(Context context) {
-		return context instanceof SingletonContext ? (SingletonContext) context : yggdrasill;
+	private SingletonBindingContext getSingletonContext(BindingContext context) {
+		return context instanceof SingletonBindingContext ? (SingletonBindingContext) context : yggdrasill;
 	}
 
 	@SuppressWarnings("unchecked")
@@ -76,7 +75,7 @@ class Providers {
 			ContextConfiguration config = yggdrasill.getAnnotationConfiguration(binding.binding.getElementClass());
 
 			if (config.contexts.size() > 0) {
-				Collection<? extends Context> annotationContexts = yggdrasill.getDynamicContexts(config.contexts);
+				Collection<? extends BindingContext> annotationContexts = yggdrasill.getDynamicContexts(config.contexts);
 				injectionContext.getContext().addAll(0, annotationContexts);
 				injectionContext.addToNext(annotationContexts, config.recursive);
 			}
@@ -99,11 +98,11 @@ class Providers {
 
 
 
-	private <T> BindingResult<T> getBoundClass(Context context, InjectionContext<T> thisInjectionContext) {
+	private <T> BindingResult<T> getBoundClass(BindingContext context, InjectionContext<T> thisInjectionContext) {
 		return context.getBinding(thisInjectionContext);
 	}
 
-	private <T> List<BindingResult<T>> getBoundClasses(Context context, InjectionContext<T> thisInjectionContext) {
+	private <T> List<BindingResult<T>> getBoundClasses(BindingContext context, InjectionContext<T> thisInjectionContext) {
 		return context.getBindings(thisInjectionContext);
 	}
 
