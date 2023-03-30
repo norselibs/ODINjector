@@ -1,7 +1,7 @@
 package io.odinjector.testclasses;
 
-import io.odinjector.Binder;
-import io.odinjector.BindingContext;
+import io.odinjector.binding.Binder;
+import io.odinjector.binding.BindingContext;
 
 public class MyMultipleBindingsCtx extends BindingContext {
 	@Override

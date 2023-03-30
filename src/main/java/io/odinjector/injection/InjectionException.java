@@ -1,4 +1,4 @@
-package io.odinjector;
+package io.odinjector.injection;
 
 public class InjectionException extends RuntimeException {
 	public InjectionException(String s) {

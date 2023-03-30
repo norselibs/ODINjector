@@ -1,4 +1,7 @@
-package io.odinjector;
+package io.odinjector.injection;
+
+import io.odinjector.binding.BindingKey;
+import io.odinjector.binding.BindingTarget;
 
 import java.util.function.Function;
 

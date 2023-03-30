@@ -1,9 +1,7 @@
 package io.odinjector.testclasses;
 
-import io.odinjector.Binder;
-import io.odinjector.BindingContext;
-
-import javax.inject.Provider;
+import io.odinjector.binding.Binder;
+import io.odinjector.binding.BindingContext;
 
 public class ProviderCtx extends BindingContext {
 

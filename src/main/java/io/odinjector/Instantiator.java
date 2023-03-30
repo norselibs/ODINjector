@@ -1,19 +1,26 @@
 package io.odinjector;
 
+import io.odinjector.binding.BindingContext;
+import io.odinjector.binding.BindingKey;
+import io.odinjector.binding.BindingResult;
+import io.odinjector.injection.InjectionContext;
+import io.odinjector.injection.InjectionContextImpl;
+import io.odinjector.injection.InjectionException;
+
 import javax.inject.Provider;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
-class Providers {
+class Instantiator {
 	private final Map<InjectionContextImpl.CurrentContext, Provider<Provider>> providers = new ConcurrentHashMap<>();
 
 	private final Yggdrasill yggdrasill;
 	private OdinJector odin;
 	private Function<Class<?>, Object> fallback = null;
 
-	public Providers(Yggdrasill yggdrasill, OdinJector odin) {
+	public Instantiator(Yggdrasill yggdrasill, OdinJector odin) {
 		this.yggdrasill = yggdrasill;
 		this.odin = odin;
 	}
@@ -38,11 +45,11 @@ class Providers {
 			configureInjectionContextOnBinding(injectionContext, binding);
 
 
-			Provider<T> provider = binding.binding.getProvider(yggdrasill, injectionContext, odin);
+			Provider<T> provider = binding.getBinding().getProvider(yggdrasill, injectionContext, odin);
 
-			if (binding.binding.isSingleton()) {
+			if (binding.getBinding().isSingleton()) {
 				T eagerlyInstantiated = provider.get();
-				return new WrappingProvider(injectionContext, new SingletonProvider(getSingletonContext(binding.context).singleton(eagerlyInstantiated.getClass(), () -> eagerlyInstantiated)));
+				return new WrappingProvider(injectionContext, new SingletonProvider(getSingletonContext(binding.getBindingContext()).singleton(eagerlyInstantiated.getClass(), () -> eagerlyInstantiated)));
 			} else {
 				return new WrappingProvider(injectionContext, provider);
 			}
@@ -64,15 +71,15 @@ class Providers {
 			return () -> bindings.stream().map(binding -> {
 				InjectionContext<T> newInjectionContext = injectionContext.copy();
 				configureInjectionContextOnBinding(newInjectionContext, binding);
-				return binding.binding.getProvider(yggdrasill, newInjectionContext, odin).get();
+				return binding.getBinding().getProvider(yggdrasill, newInjectionContext, odin).get();
 			}).collect(Collectors.toList());
 		}).get();
 	}
 
 
 	private <T> void configureInjectionContextOnBinding(InjectionContext<T> injectionContext, BindingResult<T> binding) {
-		if (binding.binding.getElementClass() != null) {
-			ContextConfiguration config = yggdrasill.getAnnotationConfiguration(binding.binding.getElementClass());
+		if (binding.getBinding().getElementClass() != null) {
+			ContextConfiguration config = yggdrasill.getAnnotationConfiguration(binding.getBinding().getElementClass());
 
 			if (config.contexts.size() > 0) {
 				Collection<? extends BindingContext> annotationContexts = yggdrasill.getDynamicContexts(config.contexts);

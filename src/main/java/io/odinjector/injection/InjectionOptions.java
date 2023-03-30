@@ -1,4 +1,4 @@
-package io.odinjector;
+package io.odinjector.injection;
 
 public class InjectionOptions {
 	boolean optional = false;

@@ -1,5 +1,11 @@
 package io.odinjector;
 
+import io.odinjector.binding.Binder;
+import io.odinjector.binding.BindingContext;
+import io.odinjector.binding.BindingResult;
+import io.odinjector.injection.InjectionContext;
+import io.odinjector.injection.InjectionException;
+
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Modifier;
 import java.util.ArrayList;
@@ -30,7 +36,7 @@ class Yggdrasill extends SingletonBindingContext {
 
 	}
 
-	<T> List<BindingResult<T>> getBindings(InjectionContext<T> injectionContext) {
+	public <T> List<BindingResult<T>> getBindings(InjectionContext<T> injectionContext) {
 		if (injectionContext.getContext() != null) {
 			List<BindingContext> list = new ArrayList<>(injectionContext.getContext());
 			Collections.reverse(list);

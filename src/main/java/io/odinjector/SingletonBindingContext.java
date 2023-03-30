@@ -1,5 +1,7 @@
 package io.odinjector;
 
+import io.odinjector.binding.BindingContext;
+
 import javax.inject.Provider;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;

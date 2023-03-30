@@ -1,5 +1,6 @@
 package io.odinjector;
 
+import io.odinjector.injection.InjectionException;
 import io.odinjector.testclasses.MyAltCtx;
 import io.odinjector.testclasses.MyCtx;
 import io.odinjector.testclasses.MyOtherAltCtx;

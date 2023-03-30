@@ -1,5 +1,7 @@
 package io.odinjector;
 
+import io.odinjector.injection.InjectionException;
+
 import java.lang.reflect.GenericArrayType;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;

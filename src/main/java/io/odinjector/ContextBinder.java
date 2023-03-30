@@ -1,9 +1,10 @@
 package io.odinjector;
 
+import io.odinjector.binding.*;
+
 import javax.inject.Provider;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.List;
 
 public class ContextBinder implements Binder {
 	private final BindingContext context;
@@ -49,19 +50,19 @@ public class ContextBinder implements Binder {
 
 		@Override
 		public void to(Class<? extends T> toClass) {
-			context.contextBindings.put(fromClass, Collections.singletonList(ClassBinding.of(BindingKey.get(toClass), setAsSingleton)));
+			context.add(fromClass, Collections.singletonList(ClassBinding.of(BindingKey.get(toClass), setAsSingleton)));
 		}
 
 		@SuppressWarnings({"rawtypes", "unchecked"})
 		@Override
 		public void to(Provider<? extends T> provider) {
-			context.contextBindings.put(fromClass, Collections.singletonList(ProviderBinding.of((Provider)provider, fromClass, setAsSingleton)));
+			context.add(fromClass, Collections.singletonList(ProviderBinding.of((Provider)provider, fromClass, setAsSingleton)));
 		}
 
 
 		@Override
 		public void to(Provides<? extends T> provides) {
-			context.contextBindings.put(fromClass, Collections.singletonList(ProviderBinding.of(provides, fromClass, setAsSingleton)));
+			context.add(fromClass, Collections.singletonList(ProviderBinding.of(provides, fromClass, setAsSingleton)));
 		}
 
 		@Override
@@ -72,7 +73,7 @@ public class ContextBinder implements Binder {
 
 		@Override
 		public void add(Class<? extends T> toClass) {
-			context.contextBindings.computeIfAbsent(fromClass, f -> new ArrayList<>()).add(ClassBinding.of(BindingKey.get(toClass), setAsSingleton));
+			context.addIfAbsent(fromClass, () -> ClassBinding.of(BindingKey.get(toClass), setAsSingleton));
 		}
 
 	}

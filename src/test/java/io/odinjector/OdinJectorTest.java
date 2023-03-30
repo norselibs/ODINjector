@@ -1,5 +1,7 @@
 package io.odinjector;
 
+import io.odinjector.binding.Binder;
+import io.odinjector.binding.BindingContext;
 import io.odinjector.testclasses.*;
 import org.junit.Assert;
 import org.junit.Before;
@@ -8,7 +10,6 @@ import org.mockito.Mockito;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
 import java.util.function.BiConsumer;
 
 import static org.junit.Assert.*;

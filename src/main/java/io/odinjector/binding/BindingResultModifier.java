@@ -1,4 +1,4 @@
-package io.odinjector;
+package io.odinjector.binding;
 
 import java.util.function.Function;
 

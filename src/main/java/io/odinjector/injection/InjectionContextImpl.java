@@ -1,4 +1,6 @@
-package io.odinjector;
+package io.odinjector.injection;
+
+import io.odinjector.binding.*;
 
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
@@ -15,7 +17,7 @@ public class InjectionContextImpl<T> implements InjectionContext<T> {
 	private List<Function<T, T>> wrappers = new ArrayList<>();
 	private Map<Class<?>, BindingResultListener> bindingResultListeners = new ConcurrentHashMap<>();
 
-	static <C> InjectionContext<C> get(List<BindingContext> context, BindingKey<C> clazz, InjectionOptions options) {
+	public static <C> InjectionContext<C> get(List<BindingContext> context, BindingKey<C> clazz, InjectionOptions options) {
 		InjectionContextImpl<C> ic = new InjectionContextImpl<>();
 		ic.context = context;
 		ic.nextContexts = new ArrayDeque<>();
@@ -25,7 +27,7 @@ public class InjectionContextImpl<T> implements InjectionContext<T> {
 		return ic;
 	}
 
-	static <C> InjectionContext<C> get(List<BindingContext> context, BindingKey<C> clazz) {
+	public static <C> InjectionContext<C> get(List<BindingContext> context, BindingKey<C> clazz) {
 		InjectionContextImpl<C> ic = new InjectionContextImpl<>();
 		ic.context = context;
 		ic.nextContexts = new ArrayDeque<>();

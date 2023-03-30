@@ -1,5 +1,12 @@
 package io.odinjector;
 
+import io.odinjector.binding.Binder;
+import io.odinjector.binding.BindingContext;
+import io.odinjector.binding.BindingKey;
+import io.odinjector.injection.InjectionContext;
+import io.odinjector.injection.InjectionContextImpl;
+import io.odinjector.injection.InjectionOptions;
+
 import java.lang.annotation.Annotation;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -10,12 +17,12 @@ import java.util.function.Function;
 
 @SuppressWarnings("rawtypes")
 public class OdinJector implements Injector {
-	private final Providers providers;
+	private final Instantiator instantiator;
 	private final Yggdrasill yggdrasill;
 
 	private OdinJector() {
 		yggdrasill = new Yggdrasill();
-		providers = new Providers(yggdrasill, this);
+		instantiator = new Instantiator(yggdrasill, this);
 		yggdrasill.addAnnotation(ContextualInject.class, (ci, config) -> {
 			config.recursive(ci.recursive()).addContext(ci.value());
 		});
@@ -48,7 +55,7 @@ public class OdinJector implements Injector {
 	}
 
 	public OdinJector setFallback(Function<Class<?>, Object> fallback) {
-		providers.setFallback(fallback);
+		instantiator.setFallback(fallback);
 		return this;
 	}
 
@@ -82,12 +89,12 @@ public class OdinJector implements Injector {
 
 	@SuppressWarnings("unchecked")
 	<T> T getInstance(InjectionContext<T> injectionContext) {
-		return providers.get(injectionContext).get();
+		return instantiator.get(injectionContext).get();
 	}
 
 	@SuppressWarnings("unchecked")
 	<T> List<T> getInstances(InjectionContext<T> injectionContext) {
-		return providers.getAll(injectionContext).get();
+		return instantiator.getAll(injectionContext).get();
 	}
 
 

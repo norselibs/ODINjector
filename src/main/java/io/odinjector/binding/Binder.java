@@ -1,4 +1,4 @@
-package io.odinjector;
+package io.odinjector.binding;
 
 public interface Binder {
 	<T> BindingTo<T> bind(Class<T> tClass);

@@ -1,4 +1,4 @@
-package io.odinjector;
+package io.odinjector.binding;
 
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Constructor;

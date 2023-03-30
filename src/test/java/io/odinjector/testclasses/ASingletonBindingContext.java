@@ -1,6 +1,6 @@
 package io.odinjector.testclasses;
 
-import io.odinjector.Binder;
+import io.odinjector.binding.Binder;
 import io.odinjector.SingletonBindingContext;
 
 public class ASingletonBindingContext extends SingletonBindingContext {

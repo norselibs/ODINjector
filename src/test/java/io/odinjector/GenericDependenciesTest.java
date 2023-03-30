@@ -1,5 +1,8 @@
 package io.odinjector;
 
+import io.odinjector.binding.Binder;
+import io.odinjector.binding.BindingContext;
+import io.odinjector.binding.BindingKey;
 import io.odinjector.testclasses.*;
 import org.junit.Before;
 import org.junit.Test;

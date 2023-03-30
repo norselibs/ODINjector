@@ -1,4 +1,7 @@
-package io.odinjector;
+package io.odinjector.binding;
+
+import io.odinjector.OdinJector;
+import io.odinjector.injection.InjectionContext;
 
 import javax.inject.Provider;
 

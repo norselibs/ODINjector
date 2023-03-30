@@ -1,7 +1,13 @@
-package io.odinjector;
+package io.odinjector.binding;
+
+import io.odinjector.ClassBinding;
+import io.odinjector.ContextBinder;
+import io.odinjector.injection.InjectionContext;
 
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.function.Function;
+import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
 public abstract class BindingContext {
@@ -13,12 +19,12 @@ public abstract class BindingContext {
 
 	public abstract void configure(Binder binder);
 
-	void init() {
+	public void init() {
 		configure(new ContextBinder(this));
 	}
 
 	@SuppressWarnings({"unchecked","rawtypes"})
-	<T> List<BindingResult<T>> getBindings(InjectionContext<T> injectionContext) {
+	public <T> List<BindingResult<T>> getBindings(InjectionContext<T> injectionContext) {
 		bindingListeners.values().forEach(bl -> bl.listen(injectionContext));
 		injectionContext.setResultListeners(bindingResultListeners);
 		if (!contextBindings.containsKey(injectionContext.getBindingKey()) && packageBindings.contains(injectionContext.getBindingKey().getBoundClass().getPackage())) {
@@ -71,5 +77,13 @@ public abstract class BindingContext {
 
 	public void addBindingResultListener(BindingResultListener listener) {
 		bindingResultListeners.put(listener.getClass(),listener);
+	}
+
+	public void add(BindingKey<?> key, List<Binding<?>> bindings) {
+		contextBindings.put(key, bindings);
+	}
+
+	public void addIfAbsent(BindingKey<?> key, Supplier<Binding<?>> binding) {
+		contextBindings.computeIfAbsent(key, l -> new ArrayList<>()).add(binding.get());
 	}
 }
