@@ -9,11 +9,6 @@ public class ProviderCtx extends BindingContext {
 
 	@Override
 	public void configure(Binder binder) {
-		binder.bind(TestInterface1.class).to(new Provider<TestInterface1>() {
-			@Override
-			public TestInterface1 get() {
-				return new TestImpl2();
-			}
-		});
+		binder.bind(TestInterface1.class).to(TestImpl2::new);
 	}
 }
