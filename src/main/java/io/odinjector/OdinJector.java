@@ -3,6 +3,7 @@ package io.odinjector;
 import io.odinjector.binding.Binder;
 import io.odinjector.binding.BindingContext;
 import io.odinjector.binding.BindingKey;
+import io.odinjector.binding.IBindingContext;
 import io.odinjector.injection.InjectionContext;
 import io.odinjector.injection.InjectionContextImpl;
 import io.odinjector.injection.InjectionOptions;
@@ -37,6 +38,16 @@ public class OdinJector implements Injector {
 
 	public static OdinJector create() {
 		return new OdinJector();
+	}
+
+	public OdinJector addContext(IBindingContext context) {
+		yggdrasill.addContext(new BindingContext() {
+			@Override
+			public void configure(Binder binder) {
+				context.configure(binder);
+			}
+		});
+		return this;
 	}
 
 	public OdinJector addContext(BindingContext context) {

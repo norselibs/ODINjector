@@ -4,8 +4,7 @@ import io.odinjector.testclasses.*;
 import org.junit.Before;
 import org.junit.Test;
 
-import static org.junit.Assert.assertNotSame;
-import static org.junit.Assert.assertSame;
+import static org.junit.Assert.*;
 
 public class SingletonTest {
     OdinJector odinJector;
@@ -47,6 +46,78 @@ public class SingletonTest {
         Hierarchy actual2 = odinJector.getInstance(Hierarchy.class);
 
         assertNotSame(actual1, actual2);
+    }
+
+    @Test
+    public void getSingletonNumberOfConstructorInvocations_setInContext() {
+        odinJector.addContext(new SingletonCtx());
+        HierarchyImpl.invocations.set(0);
+        Hierarchy actual1 = odinJector.getInstance(Hierarchy.class);
+        Hierarchy actual2 = odinJector.getInstance(Hierarchy.class);
+
+        assertEquals(1, HierarchyImpl.invocations.get());
+    }
+
+    @Test
+    public void getSingletonNumberOfConstructorInvocations_fromInterfaceAndImplementation() {
+        odinJector.addContext(new SingletonOnImplementationCtx());
+        HierarchyImpl.invocations.set(0);
+        Hierarchy actual1 = odinJector.getInstance(HierarchyImpl.class);
+        Hierarchy actual2 = odinJector.getInstance(Hierarchy.class);
+
+        assertSame(actual1, actual2);
+        assertEquals(1, HierarchyImpl.invocations.get());
+    }
+
+    @Test
+    public void getSingletonNumberOfConstructorInvocations_isDifferentDependingOnSingletonContext() {
+        HierarchyImpl.invocations.set(0);
+        odinJector.addDynamicContext(new SingletonCtx());
+        Hierarchy actual1 = odinJector.getInstance(SingletonCtx.class, Hierarchy.class);
+        Hierarchy actual2 = odinJector.getInstance(Hierarchy.class);
+
+        assertEquals(2, HierarchyImpl.invocations.get());
+    }
+
+
+    @Test
+    public void getSingleton_fromProvider_setInContext() {
+        odinJector.addContext(new SingletonProviderCtx());
+        Hierarchy actual1 = odinJector.getInstance(Hierarchy.class);
+        Hierarchy actual2 = odinJector.getInstance(Hierarchy.class);
+
+        assertSame(actual1, actual2);
+    }
+
+    @Test
+    public void getSingleton_fromProvider_isDifferentDependingOnSingletonContext() {
+        odinJector.addDynamicContext(new SingletonProviderCtx());
+        Hierarchy actual1 = odinJector.getInstance(SingletonProviderCtx.class, Hierarchy.class);
+        Hierarchy actual2 = odinJector.getInstance(Hierarchy.class);
+
+        assertNotSame(actual1, actual2);
+    }
+
+    @Test
+    public void getSingletonNumberOfConstructorInvocations_fromProvider_setInContext() {
+        odinJector.addContext(binder -> {
+            binder.bind(Hierarchy.class).asSingleton().to(() -> new HierarchyImpl(new SingletonImpl()));
+        });
+        HierarchyImpl.invocations.set(0);
+        Hierarchy actual1 = odinJector.getInstance(Hierarchy.class);
+        Hierarchy actual2 = odinJector.getInstance(Hierarchy.class);
+
+        assertEquals(1, HierarchyImpl.invocations.get());
+    }
+
+    @Test
+    public void getSingletonNumberOfConstructorInvocations_fromProvider_isDifferentDependingOnSingletonContext() {
+        HierarchyImpl.invocations.set(0);
+        odinJector.addDynamicContext(new SingletonProviderCtx());
+        Hierarchy actual1 = odinJector.getInstance(SingletonProviderCtx.class, Hierarchy.class);
+        Hierarchy actual2 = odinJector.getInstance(Hierarchy.class);
+
+        assertEquals(2, HierarchyImpl.invocations.get());
     }
 
     @Test
@@ -117,4 +188,5 @@ public class SingletonTest {
         assertSame(otherSingleton, otherSingleton2);
         assertSame(otherSingleton.inner(), otherSingleton2.inner());
     }
+
 }

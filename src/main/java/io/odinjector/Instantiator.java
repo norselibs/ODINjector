@@ -48,8 +48,7 @@ class Instantiator {
 			Provider<T> provider = binding.getBinding().getProvider(yggdrasill, injectionContext, odin);
 
 			if (binding.getBinding().isSingleton()) {
-				T eagerlyInstantiated = provider.get();
-				return new WrappingProvider(injectionContext, new SingletonProvider(getSingletonContext(binding.getBindingContext()).singleton(eagerlyInstantiated.getClass(), () -> eagerlyInstantiated)));
+				return new WrappingProvider(injectionContext, new SingletonProvider(getSingletonContext(binding.getBindingContext()).singleton(binding.getBinding().getElementClass(), provider)));
 			} else {
 				return new WrappingProvider(injectionContext, provider);
 			}

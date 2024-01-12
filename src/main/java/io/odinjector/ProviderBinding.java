@@ -50,7 +50,7 @@ public class ProviderBinding<T> implements Binding<T> {
 
 	@Override
 	public Class<T> getElementClass() {
-		return null;
+		return clazz.getBoundClass();
 	}
 
 	@Override
