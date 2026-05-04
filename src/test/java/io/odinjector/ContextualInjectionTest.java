@@ -69,5 +69,22 @@ public class ContextualInjectionTest {
         assertSame(TestImpl3.class, actual.getTestInterface1().getClass());
     }
 
+    @Test
+    public void getDependency_fromContextualInject_viaProvider() {
+        ContextualDependenciesWithProvider actual = odinJector.getInstance(ContextualDependenciesWithProvider.class);
+
+        // The Provider.get() call happens lazily here, after construction.
+        // Contextual setup from @ContextualInject(MyAltCtx) must still be active,
+        // so TestImpl2 (MyAltCtx binding) should win over TestImpl1 (MyCtx binding).
+        assertSame(TestImpl2.class, actual.get().getClass());
+    }
+
+    @Test
+    public void getDependency_fromContextualInject_viaProvider_isConsistentAcrossMultipleCalls() {
+        ContextualDependenciesWithProvider actual = odinJector.getInstance(ContextualDependenciesWithProvider.class);
+
+        assertSame(actual.get().getClass(), actual.get().getClass());
+        assertSame(TestImpl2.class, actual.get().getClass());
+    }
 
 }
