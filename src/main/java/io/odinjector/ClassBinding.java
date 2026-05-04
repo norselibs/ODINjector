@@ -10,14 +10,27 @@ import io.odinjector.injection.InjectionException;
 import javax.inject.Inject;
 import javax.inject.Provider;
 import javax.inject.Singleton;
+import java.lang.annotation.Annotation;
 import java.lang.reflect.*;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.function.Consumer;
+import java.util.stream.Collectors;
 
 @SuppressWarnings({"rawtypes","unchecked"})
 public class ClassBinding<T> implements Binding<T> {
+	@SuppressWarnings("unchecked")
+	private static final Class<? extends Annotation> JAVAX_POST_CONSTRUCT;
+	static {
+		Class<? extends Annotation> cls = null;
+		try {
+			cls = (Class<? extends Annotation>) Class.forName("javax.annotation.PostConstruct");
+		} catch (ClassNotFoundException ignored) {}
+		JAVAX_POST_CONSTRUCT = cls;
+	}
+
 	BindingKey<?> toClass;
 	boolean setAsSingleton;
 
@@ -75,7 +88,25 @@ public class ClassBinding<T> implements Binding<T> {
 			}
 		}
 
+		for (Method method : toClass.getDeclaredMethods()) {
+			if (isPostConstruct(method)) {
+				method.setAccessible(true);
+				additionalInjectors.add((t) -> {
+					try {
+						method.invoke(t);
+					} catch (IllegalAccessException | InvocationTargetException e) {
+						throw new InjectionException("@PostConstruct failed on " + method.getName() + " in " + toClass.getName(), e);
+					}
+				});
+			}
+		}
+
 		return new ClassBindingProvider(thisInjectionContext, constructor, args, toClass, additionalInjectors);
+	}
+
+	private boolean isPostConstruct(Method method) {
+		return method.isAnnotationPresent(PostConstruct.class)
+				|| (JAVAX_POST_CONSTRUCT != null && method.isAnnotationPresent(JAVAX_POST_CONSTRUCT));
 	}
 
 	private Provider<T> getInjection(InjectionContext<T> thisInjectionContext, OdinJector injector, Class type, AnnotatedType annotatedType, BindingTarget target) {
@@ -111,13 +142,24 @@ public class ClassBinding<T> implements Binding<T> {
 
 		@Override
 		public C get() {
+			LinkedList<Class<?>> chain = Instantiator.RESOLUTION_CHAIN.get();
+			Class<?> type = toBindingKey.getBoundClass();
+			if (chain.contains(type)) {
+				String chainStr = chain.stream().map(Class::getSimpleName).collect(Collectors.joining(" → "));
+				throw new InjectionException("Circular dependency detected: " + chainStr + " → " + type.getSimpleName());
+			}
+			chain.addLast(type);
 			try {
 				constructor.setAccessible(true);
 				C res = (C) constructor.newInstance(args.stream().map(Provider::get).toArray());
 				additionalInjectors.forEach(c -> c.accept(res));
 				return res;
+			} catch (InjectionException e) {
+				throw e;
 			} catch (Exception e) {
-				throw new InjectionException("Unable to construct "+ toBindingKey.getName(),e);
+				throw new InjectionException("Unable to construct " + toBindingKey.getName(), e);
+			} finally {
+				chain.removeLast();
 			}
 		}
 	}

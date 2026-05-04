@@ -14,6 +14,8 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 
 class Instantiator {
+	static final ThreadLocal<LinkedList<Class<?>>> RESOLUTION_CHAIN = ThreadLocal.withInitial(LinkedList::new);
+
 	private final Map<InjectionContextImpl.CurrentContext, Provider<Provider>> providers = new ConcurrentHashMap<>();
 
 	private final Yggdrasill yggdrasill;
@@ -38,7 +40,10 @@ class Instantiator {
 				if (injectionContext.isOptional()) {
 					return () -> null;
 				} else {
-					throw new InjectionException("Unable to find binding for: " + injectionContext.logOutput());
+					LinkedList<Class<?>> chain = RESOLUTION_CHAIN.get();
+					String suffix = chain.isEmpty() ? "" : " (resolution chain: "
+							+ chain.stream().map(Class::getSimpleName).collect(Collectors.joining(" → ")) + ")";
+					throw new InjectionException("Unable to find binding for: " + injectionContext.logOutput() + suffix);
 				}
 			}
 
@@ -53,7 +58,15 @@ class Instantiator {
 				return new WrappingProvider(injectionContext, provider);
 			}
 		});
-		return (Provider<T>) providerToReturn.get();
+		try {
+			return (Provider<T>) providerToReturn.get();
+		} catch (IllegalStateException e) {
+			LinkedList<Class<?>> chain = RESOLUTION_CHAIN.get();
+			String typeName = injectionContext.getBindingKey().getBoundClass().getSimpleName();
+			String chainStr = chain.stream().map(Class::getSimpleName).collect(Collectors.joining(" → "));
+			throw new InjectionException("Circular dependency detected: "
+					+ (chainStr.isEmpty() ? typeName : chainStr + " → " + typeName), e);
+		}
 	}
 
 	private SingletonBindingContext getSingletonContext(BindingContext context) {
