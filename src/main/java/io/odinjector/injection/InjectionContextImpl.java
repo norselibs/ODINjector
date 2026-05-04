@@ -129,6 +129,7 @@ public class InjectionContextImpl<T> implements InjectionContext<T> {
 		injectionContext.context = new ArrayList<>(this.context);
 		injectionContext.clazz = this.clazz;
 		injectionContext.options = InjectionOptions.get();
+		injectionContext.bindingResultListeners = new ConcurrentHashMap<>(this.bindingResultListeners);
 		return injectionContext;
 	}
 

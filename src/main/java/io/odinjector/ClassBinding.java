@@ -35,8 +35,8 @@ public class ClassBinding<T> implements Binding<T> {
 	}
 
 	public Provider<T> getProvider(BindingContext context, InjectionContext<T> thisInjectionContext, OdinJector injector) {
-		Constructor<?> constructor = Arrays.stream(toClass.getBoundClass().getConstructors()).filter(const1 -> const1.isAnnotationPresent(Inject.class)).findFirst()
-				.orElseGet(() -> Arrays.stream(toClass.getBoundClass().getConstructors()).filter(c2 -> c2.getParameterTypes().length == 0).findFirst()
+		Constructor<?> constructor = Arrays.stream(toClass.getBoundClass().getDeclaredConstructors()).filter(const1 -> const1.isAnnotationPresent(Inject.class)).findFirst()
+				.orElseGet(() -> Arrays.stream(toClass.getBoundClass().getDeclaredConstructors()).filter(c2 -> c2.getParameterTypes().length == 0).findFirst()
 						.orElseThrow(() -> new InjectionException("Unable to find constructor which has the @Inject annotation or is parameterless on: "+toClass.getName())));
 
 
@@ -47,6 +47,7 @@ public class ClassBinding<T> implements Binding<T> {
 		List<Consumer<T>> additionalInjectors = new ArrayList<>();
 		for(Method method : toClass.getDeclaredMethods()) {
 			if (method.isAnnotationPresent(Inject.class)) {
+				method.setAccessible(true);
 				List<Provider> methodArgs = new ArrayList<>();
 				for(int x=0;x<method.getParameters().length;x++) {
 					methodArgs.add(getInjection(thisInjectionContext, injector, method.getParameters()[x].getType(), method.getParameters()[x].getAnnotatedType(), new BindingTarget.ParameterTarget(method.getParameters()[x])));
@@ -111,6 +112,7 @@ public class ClassBinding<T> implements Binding<T> {
 		@Override
 		public C get() {
 			try {
+				constructor.setAccessible(true);
 				C res = (C) constructor.newInstance(args.stream().map(Provider::get).toArray());
 				additionalInjectors.forEach(c -> c.accept(res));
 				return res;

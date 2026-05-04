@@ -70,7 +70,7 @@ class Instantiator {
 			return () -> bindings.stream().map(binding -> {
 				InjectionContext<T> newInjectionContext = injectionContext.copy();
 				configureInjectionContextOnBinding(newInjectionContext, binding);
-				return binding.getBinding().getProvider(yggdrasill, newInjectionContext, odin).get();
+				return new WrappingProvider<>(newInjectionContext, binding.getBinding().getProvider(yggdrasill, newInjectionContext, odin)).get();
 			}).collect(Collectors.toList());
 		}).get();
 	}

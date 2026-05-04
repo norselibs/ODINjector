@@ -4,6 +4,7 @@ import io.odinjector.binding.Binding;
 import io.odinjector.binding.BindingContext;
 import io.odinjector.binding.BindingKey;
 import io.odinjector.injection.InjectionContext;
+import io.odinjector.injection.InjectionException;
 
 import javax.inject.Provider;
 
@@ -45,7 +46,7 @@ public class ProviderBinding<T> implements Binding<T> {
 		if (provides != null) {
 			return () -> provides.call(injector);
 		}
-		throw new RuntimeException();
+		throw new InjectionException("ProviderBinding has neither a Provider nor a Provides — this is a bug in binding construction");
 	}
 
 	@Override
